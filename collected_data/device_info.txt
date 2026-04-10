@@ -1,1 +1,0 @@
-2026-04-10 21:22:29.493814: {'type': 'device_info', 'userAgent': 'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Mobile Safari/537.36', 'platform': 'Linux armv81', 'language': 'ar-IQ', 'screenWidth': 320, 'screenHeight': 715, 'timezone': 'Asia/Baghdad'}

