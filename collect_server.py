@@ -6,7 +6,6 @@ from datetime import datetime
 
 app = Flask(__name__)
 
-# Save directory inside project folder
 SAVE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "collected_data")
 os.makedirs(SAVE_DIR, exist_ok=True)
 
